@@ -50,11 +50,20 @@ Fork 後的儲存庫預設關閉了某些功能，你需要手動開啟：
 - 互動效果與動畫
 - 響應式設計需求
 
-### 5. 啟動 AI 開發
+### 5. 部署到 Vercel
+
+1. 前往 [Vercel](https://vercel.com) 並使用 GitHub 帳號登入
+2. 點擊 "New Project"
+3. 選擇你 Fork 的 `vibe-template` 儲存庫
+4. Vercel 會自動偵測 Next.js 設定，直接點擊 "Deploy"
+5. 部署完成後，你會獲得一個專屬的網址（例如：`your-project.vercel.app`）
+
+### 6. 啟動 AI 開發
 
 1. 創建一個新的 Issue 描述你的需求
 2. 在 Issue 評論中輸入 `@claude` 
 3. AI 將自動開始工作並創建 Pull Request
+4. 合併 PR 後，Vercel 會自動重新部署最新版本
 
 ## 📁 專案結構
 
@@ -129,7 +138,7 @@ pnpm test
    - `/docs/*` - 獲取技術規範和指導
 5. **自動實現** - AI 根據所有上下文生成完整的功能程式碼
 6. **創建 PR** - 自動提交 Pull Request 供審查
-7. **部署上線** - 合併後即可部署成為真實網站
+7. **部署上線** - 合併 PR 後，Vercel 會自動部署最新版本
 
 ## 📚 Issue 和 PR 模板
 
