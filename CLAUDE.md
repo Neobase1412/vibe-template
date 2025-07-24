@@ -149,6 +149,99 @@ export function NavBar() {
    - 某些連結可能基於用戶狀態顯示
    - 但對應的頁面仍需存在
 
+## 標準頁面結構
+
+### 頁面 Metadata 設定
+
+每個頁面都必須包含適當的 metadata，這對 SEO 和使用者體驗至關重要：
+
+```tsx
+import { Metadata } from 'next'
+
+// 靜態 Metadata
+export const metadata: Metadata = {
+  title: '產品列表 | 您的商店名稱',
+  description: '瀏覽我們精選的優質產品，找到最適合您的選擇',
+  keywords: '產品, 購物, 電商', // 選填
+  openGraph: {
+    title: '產品列表',
+    description: '瀏覽我們精選的優質產品',
+    type: 'website',
+    images: ['/og-image.jpg'], // 建議尺寸 1200x630
+  }
+}
+
+// 動態 Metadata（用於動態路由）
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const product = await getProduct(params.id)
+  
+  return {
+    title: `${product.name} | 您的商店名稱`,
+    description: product.description || `購買 ${product.name}`,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      images: [product.image_url],
+    }
+  }
+}
+```
+
+### 完整頁面結構範例
+
+```tsx
+import { Metadata } from 'next'
+import { Suspense } from 'react'
+
+// 1. Metadata 設定
+export const metadata: Metadata = {
+  title: '頁面標題',
+  description: '頁面描述',
+}
+
+// 2. 載入元件
+function LoadingState() {
+  return <div className="container mx-auto px-4 py-8">載入中...</div>
+}
+
+// 3. 頁面元件
+export default function Page() {
+  return (
+    <div className="min-h-screen">
+      {/* 頁面標題區 */}
+      <header className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold">頁面標題</h1>
+        <p className="text-gray-600 mt-2">頁面副標題或說明</p>
+      </header>
+
+      {/* 主要內容區 */}
+      <main className="container mx-auto px-4 py-8">
+        <Suspense fallback={<LoadingState />}>
+          {/* 實際內容 */}
+        </Suspense>
+      </main>
+
+      {/* 相關操作或 CTA */}
+      <section className="container mx-auto px-4 py-8">
+        {/* 操作按鈕或相關連結 */}
+      </section>
+    </div>
+  )
+}
+```
+
+### Metadata 必填欄位
+
+1. **title** - 頁面標題（建議 50-60 字符）
+2. **description** - 頁面描述（建議 150-160 字符）
+
+### Metadata 選填但建議欄位
+
+1. **openGraph** - 社群分享資訊
+2. **keywords** - SEO 關鍵字（現代 SEO 較少使用）
+3. **authors** - 作者資訊
+4. **robots** - 搜尋引擎爬蟲指令
+
 ## 如何開始
 
 1. 閱讀 `PRD.md` 了解具體需求
