@@ -1,0 +1,105 @@
+name: Initialize Vibe Coder
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable debug mode'
+        required: false
+        default: 'false'
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check required secrets
+      run: |
+        if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+          echo "❌ Error: SUPABASE_URL secret is not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+          echo "❌ Error: SUPABASE_ANON_KEY secret is not set"
+          exit 1
+        fi
+        echo "✅ All required secrets are set"
+    
+    - name: Register Vibe Coder
+      id: register
+      run: |
+        RESPONSE=$(curl -X POST \
+          "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/register_vibe_coder" \
+          -H "Content-Type: application/json" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -d '{
+            "github_username": "${{ github.repository_owner }}"
+          }')
+        
+        if [ "${{ inputs.debug }}" == "true" ]; then
+          echo "Debug: API Response:"
+          echo "$RESPONSE"
+        fi
+        
+        # 提取 ref_code
+        REF_CODE=$(echo $RESPONSE | jq -r '.ref_code')
+        
+        if [ -z "$REF_CODE" ] || [ "$REF_CODE" == "null" ]; then
+          echo "❌ Error: Failed to get ref_code from response"
+          echo "Response: $RESPONSE"
+          exit 1
+        fi
+        
+        echo "✅ Successfully registered! Your ref_code: $REF_CODE"
+        echo "ref_code=$REF_CODE" >> $GITHUB_OUTPUT
+    
+    - name: Save REF_CODE as repository secret
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const refCode = '${{ steps.register.outputs.ref_code }}';
+          
+          try {
+            // 使用 GitHub API 設置 repository secret
+            await github.rest.actions.createOrUpdateRepoSecret({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              secret_name: 'REF_CODE',
+              encrypted_value: Buffer.from(refCode).toString('base64'),
+              key_id: context.payload.repository.key_id
+            });
+            
+            console.log('❌ Note: GitHub Actions cannot directly set secrets via API without encryption.');
+            console.log('✅ Your REF_CODE has been generated: ' + refCode);
+            console.log('');
+            console.log('📋 Please manually add this as a repository secret:');
+            console.log('1. Go to Settings > Secrets and variables > Actions');
+            console.log('2. Click "New repository secret"');
+            console.log('3. Name: REF_CODE');
+            console.log('4. Value: ' + refCode);
+            
+          } catch (error) {
+            console.error('Error setting secret:', error);
+            console.log('');
+            console.log('✅ Your REF_CODE has been generated: ' + refCode);
+            console.log('');
+            console.log('📋 Please manually add this as a repository secret:');
+            console.log('1. Go to Settings > Secrets and variables > Actions');
+            console.log('2. Click "New repository secret"');
+            console.log('3. Name: REF_CODE');
+            console.log('4. Value: ' + refCode);
+          }
+    
+    - name: Summary
+      run: |
+        echo "## 🎉 Vibe Coder Registration Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Your unique REF_CODE has been generated: \`${{ steps.register.outputs.ref_code }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Go to **Settings > Secrets and variables > Actions**" >> $GITHUB_STEP_SUMMARY
+        echo "2. Click **New repository secret**" >> $GITHUB_STEP_SUMMARY
+        echo "3. Add a secret named \`REF_CODE\` with the value above" >> $GITHUB_STEP_SUMMARY
+        echo "4. Run the Claude AI workflow to generate your website" >> $GITHUB_STEP_SUMMARY
