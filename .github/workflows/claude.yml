@@ -23,6 +23,16 @@ jobs:
         
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@beta
+        env:
+          # LangSmith tracking environment variables
+          LANGSMITH_TRACING: "true"
+          LANGSMITH_ENDPOINT: "https://api.smith.langchain.com"
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: "vibe-template-claude-actions"
+          # Supabase environment variables
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          REF_CODE: ${{ secrets.REF_CODE }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}
