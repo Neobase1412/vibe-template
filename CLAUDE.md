@@ -17,6 +17,8 @@
 
 1. **優先使用 Shadcn/UI 元件** - 專案已預安裝 Button、Card、Input 等元件，必須優先使用這些元件來構建 UI
 2. **通過 API 獲取數據** - 所有商品數據必須通過 `fetch('/api/products')` 來獲取，不得直接引入 JSON 文件
+   - API 會自動從 Supabase Data Center 獲取真實商品資料
+   - 支援透過 `?ids=PROD_001,PROD_002` 參數篩選特定商品
 3. **遵循 TypeScript 規範** - 所有新增程式碼必須有適當的類型定義
 4. **創建測試** - 為新增的核心功能創建相應的測試文件
 5. **保持程式碼風格一致** - 遵循 `docs/coding_style.md` 中定義的規範
@@ -29,6 +31,7 @@
    - 必須確保所有連結指向的頁面都已存在
    - 必須為每個連結創建對應的頁面文件（即使是基礎內容）
    - 每個頁面都應包含有意義的內容，避免空白頁面
+9. **實作推薦連結** - 所有購買按鈕必須使用 `generateRefLink` 函數生成正確的推薦連結
 
 ### 禁止的操作 (FORBIDDEN)
 
@@ -44,6 +47,7 @@
 - **樣式**: Tailwind CSS
 - **UI 元件**: Shadcn/UI
 - **數據獲取**: Fetch API
+- **資料來源**: Supabase (Data Center API)
 
 ## 專案結構
 
@@ -153,39 +157,43 @@ export function NavBar() {
 
 ### 頁面 Metadata 設定
 
-每個頁面都必須包含適當的 metadata，這對 SEO 和使用者體驗至關重要：
+每個頁面都應該包含適當的 metadata。請根據 PRD 的需求，為每個頁面設定合適的標題和描述：
 
 ```tsx
 import { Metadata } from 'next'
 
-// 靜態 Metadata
+// 基本 Metadata（每個頁面都應該有）
 export const metadata: Metadata = {
-  title: '產品列表 | 您的商店名稱',
-  description: '瀏覽我們精選的優質產品，找到最適合您的選擇',
-  keywords: '產品, 購物, 電商', // 選填
+  title: '頁面標題 - 根據 PRD 設定',
+  description: '頁面描述 - 根據 PRD 設定',
+}
+
+// 如果需要更豐富的 SEO，可以加入：
+export const metadata: Metadata = {
+  title: '具體的頁面標題',
+  description: '吸引人的頁面描述',
+  keywords: '相關, 關鍵字',
   openGraph: {
-    title: '產品列表',
-    description: '瀏覽我們精選的優質產品',
+    title: '社群分享標題',
+    description: '社群分享描述',
     type: 'website',
-    images: ['/og-image.jpg'], // 建議尺寸 1200x630
+    images: ['/分享圖片.jpg'], // 如果有的話
   }
 }
 
-// 動態 Metadata（用於動態路由）
+// 動態頁面的 Metadata
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const product = await getProduct(params.id)
+  // 根據動態內容生成 metadata
+  const data = await getData(params.id)
   
   return {
-    title: `${product.name} | 您的商店名稱`,
-    description: product.description || `購買 ${product.name}`,
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: [product.image_url],
-    }
+    title: data.title,
+    description: data.description,
   }
 }
 ```
+
+**重要**：不要使用預設的 "Create Next App" 標題，請根據實際內容設定有意義的 metadata。
 
 ### 完整頁面結構範例
 
@@ -249,6 +257,46 @@ export default function Page() {
 3. 檢查現有的元件和工具函數
 4. 開始實現功能，記得遵守所有規則
 
+## 重要文件參考
+
+實作功能時，請特別參考以下指南：
+
+- **表單實作** → 參考 `docs/form_guidelines.md`（使用 React Hook Form + Zod）
+- **圖片處理** → 參考 `docs/media_handling.md`（外部圖片使用 img 標籤）
+- **錯誤處理** → 參考 `docs/loading_error_states.md`（使用 Boundary）
+- **SEO 設定** → 參考 `docs/seo_metadata.md`（每頁都需要 metadata）
+- **導航實作** → 參考 `docs/navigation_guide.md`（確保連結有效）
+
+## SEO 實作指引
+
+當 PRD 需要 SEO 功能時，請實作以下內容：
+
+### 1. 頁面 Metadata（必須實作）
+每個頁面都應該有合適的 metadata：
+- 根據頁面內容設定標題和描述
+- 不要保留預設的 "Create Next App"
+- 參考 `docs/seo_metadata.md` 了解完整選項
+
+### 2. Sitemap（需要時實作）
+如果 PRD 要求搜尋引擎優化：
+- 創建 `app/sitemap.ts`
+- 列出所有公開頁面
+- 參考 Next.js 文檔的 sitemap 格式
+
+### 3. Robots.txt（需要時實作）
+如果需要控制爬蟲行為：
+- 創建 `app/robots.ts`
+- 設定允許/禁止的路徑
+- 連結到 sitemap
+
+### 4. 結構化數據（進階 SEO）
+如果需要豐富搜尋結果：
+- 使用 JSON-LD 格式
+- 根據內容類型選擇適當的 schema
+- 參考 `docs/seo_metadata.md` 的範例
+
+**原則**：根據 PRD 的實際需求來決定要實作哪些 SEO 功能，不要預設實作所有功能。
+
 記住：你的目標是創建一個既符合需求、又遵守規範的高品質應用程式。
 
 ## V0.dev 整合說明
@@ -257,5 +305,105 @@ export default function Page() {
 - 使用已安裝的 Shadcn/UI 元件
 - 遵循專案的 Tailwind CSS 配置
 - 符合 TypeScript 類型定義
+
+## 商品資料整合說明
+
+### 資料來源
+專案已整合 Supabase Data Center，所有商品資料都從真實的資料庫獲取：
+
+1. **API 端點** - `/api/products` 會自動從 Supabase 獲取商品資料
+2. **資料格式** - 商品資料包含以下欄位：
+   ```typescript
+   interface Product {
+     id: string              // 商品 ID (如 PROD_001)
+     merchant_id: string     // 商家 ID
+     name: string           // 商品名稱
+     price_in_cents: number // 價格（以分為單位）
+     image_url: string | null // 商品圖片 URL
+     merchant: {            // 商家資訊
+       id: string
+       name: string
+       base_product_url: string // 商家銷售頁面基礎 URL
+     }
+   }
+   ```
+
+### 獲取商品資料
+
+```typescript
+// 獲取所有商品
+const response = await fetch('/api/products')
+const products = await response.json()
+
+// 獲取特定商品（根據 PRD 中指定的商品 ID）
+const response = await fetch('/api/products?ids=PROD_001,PROD_002,PROD_003')
+const products = await response.json()
+```
+
+### 使用範例
+
+```tsx
+// 在頁面元件中使用
+export default async function ProductsPage() {
+  // 從 PRD.md 讀取商品 ID 列表
+  // PRD.md 中會列出如：
+  // - PROD_001
+  // - PROD_002
+  // - PROD_003
+  const productIds = ['PROD_001', 'PROD_002', 'PROD_003'] // 根據 PRD.md 內容設定
+  const response = await fetch(`/api/products?ids=${productIds.join(',')}`)
+  const products = await response.json()
+
+  return (
+    <div className="grid grid-cols-3 gap-6">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  )
+}
+```
+
+### 重要說明
+
+當 PRD.md 中指定了商品 ID 列表時，你需要：
+1. 解析 PRD.md 中的商品 ID（如 PROD_001、PROD_002）
+2. 使用這些 ID 透過 API 獲取商品資料
+3. 系統會自動從 Supabase 獲取完整的商品資訊，包括名稱、價格、圖片等
+4. 使用 `generateRefLink` 函數為每個商品生成正確的推薦連結
+
+## REF Link 整合說明
+
+### 重要：引流連結生成
+當實現商品購買按鈕時，必須確保所有「購買」或「查看詳情」連結都包含正確的 ref 參數：
+
+1. **環境變數 `REF_CODE`** - 每個 Vibe Coder 都有專屬的 REF_CODE（透過 GitHub Action 自動生成）
+2. **生成連結格式** - 使用以下函數生成正確的引流連結：
+
+```typescript
+import { generateRefLink } from '@/lib/supabase'
+
+// 使用方式
+const refCode = process.env.REF_CODE || 'DEFAULT'
+const buyLink = generateRefLink(product, refCode)
+```
+
+3. **實作範例**：
+```tsx
+// 購買按鈕元件
+<Button asChild>
+  <a href={generateRefLink(product, process.env.REF_CODE || 'DEFAULT')} 
+     target="_blank" 
+     rel="noopener noreferrer">
+    立即購買
+  </a>
+</Button>
+```
+
+### 注意事項
+- 所有商品連結都必須包含 `?ref=` 參數
+- 商品資料必須包含 merchant 資訊才能生成正確連結
+- 連結會指向商家的實際銷售頁面
+- PRD 中指定的商品 ID 必須是真實存在的商品
 
 祝你開發順利！

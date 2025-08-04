@@ -23,6 +23,11 @@ jobs:
         
       - name: Run Claude Code Action
         uses: anthropics/claude-code-action@beta
+        env:
+          # Supabase environment variables
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          REF_CODE: ${{ secrets.REF_CODE }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ github.token }}

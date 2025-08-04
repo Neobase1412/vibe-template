@@ -1,20 +1,45 @@
 import { NextResponse } from 'next/server'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { supabase } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // 讀取 public/products.json 文件
-    const jsonPath = path.join(process.cwd(), 'public', 'products.json')
-    const fileContents = await fs.readFile(jsonPath, 'utf8')
-    const products = JSON.parse(fileContents)
+    // 檢查 Supabase 是否可用
+    if (!supabase) {
+      console.warn('Supabase client is not initialized. Returning empty array.')
+      return NextResponse.json([])
+    }
+    
+    // 獲取查詢參數
+    const { searchParams } = new URL(request.url)
+    const idsParam = searchParams.get('ids')
+    
+    // 構建查詢
+    let query = supabase
+      .from('products')
+      .select(`
+        *,
+        merchant:merchants(*)
+      `)
+    
+    // 如果有指定 ids，則過濾
+    if (idsParam) {
+      const ids = idsParam.split(',').map(id => id.trim())
+      query = query.in('id', ids)
+    }
+    
+    // 執行查詢
+    const { data: products, error } = await query
+    
+    if (error) {
+      throw error
+    }
     
     // 返回成功響應
-    return NextResponse.json(products)
+    return NextResponse.json(products || [])
   } catch (error) {
     // 錯誤處理
     if (process.env.NODE_ENV === 'development') {
-      console.error('Failed to load products:', error)
+      console.error('Failed to load products from Supabase:', error)
     }
     return NextResponse.json(
       { error: 'Failed to load products' },
