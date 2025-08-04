@@ -2,7 +2,7 @@
 
 ## 核心原則
 
-良好的 SEO 和 Metadata 設置能提升網站在搜尋引擎的排名，並改善社群分享時的呈現效果。
+這份指南說明如何實作 SEO 功能。請根據 PRD 的需求來決定要實作哪些部分。
 
 ## 基礎 Metadata 設定
 
@@ -403,18 +403,68 @@ export const metadata: Metadata = {
 - [ ] 404 頁面有返回首頁連結
 - [ ] 網站速度優化（Core Web Vitals）
 
-## 測試工具
+## Sitemap 實作指南
 
-1. **Google Rich Results Test** - 測試結構化數據
-2. **Facebook Sharing Debugger** - 測試 Open Graph
-3. **Twitter Card Validator** - 測試 Twitter Card
-4. **Google PageSpeed Insights** - 測試效能和 SEO
-5. **Chrome Lighthouse** - 綜合 SEO 評分
+當 PRD 需要搜尋引擎優化時，創建 `app/sitemap.ts`：
 
-## 注意事項
+```typescript
+import { MetadataRoute } from 'next'
 
-1. **動態內容** - 確保爬蟲可以看到動態生成的內容
-2. **重複內容** - 使用 canonical 標籤避免重複內容問題
-3. **移動優先** - 確保移動版本的 SEO 優化
-4. **載入速度** - 影響 SEO 排名的重要因素
-5. **HTTPS** - 使用安全連線是現代 SEO 的基本要求
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: 'https://your-site.com',
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 1,
+    },
+    {
+      url: 'https://your-site.com/about',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    // 加入所有公開頁面
+  ]
+}
+```
+
+**注意**：
+- 只包含公開頁面
+- 動態路由需要列出所有實例
+- URL 在部署時需要更新為實際網址
+
+## Robots.txt 實作指南
+
+如果需要控制搜尋引擎爬蟲，創建 `app/robots.ts`：
+
+```typescript
+import { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: '/private/',
+    },
+    sitemap: 'https://your-site.com/sitemap.xml',
+  }
+}
+```
+
+## 實作優先順序
+
+1. **必須實作**：頁面 Metadata（標題、描述）
+2. **建議實作**：Open Graph（社群分享）
+3. **選擇性實作**：
+   - Sitemap（需要搜尋引擎索引時）
+   - Robots.txt（需要控制爬蟲時）
+   - 結構化數據（需要豐富搜尋結果時）
+
+## 重要提醒
+
+- 不要保留預設的 "Create Next App" 標題
+- 每個頁面都應有獨特且描述性的 metadata
+- 根據 PRD 需求決定實作哪些 SEO 功能
+- 部署相關的設定（如實際網址）留到部署時處理
