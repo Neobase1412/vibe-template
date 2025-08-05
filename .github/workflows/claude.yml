@@ -48,6 +48,15 @@ jobs:
             6. 通過 /api/products 獲取商品數據
             7. 遵循所有編碼規範和視覺指南
             
+            商品資料整合：
+            - 商品資料來自 Supabase 資料庫，不是本地 JSON 檔案
+            - 從 PRD.md 的「商品選擇」章節讀取要展示的商品 ID（如 PROD_001、PROD_002）
+            - 優先使用 Server Component 直接從 Supabase 獲取資料
+            - 如需使用 API，使用相對路徑 /api/products?ids=PROD_001,PROD_002
+            - 不要使用 localhost 或複雜的 baseUrl 邏輯
+            - 所有購買按鈕必須使用 generateRefLink 函數生成包含 ref 參數的連結
+            - 環境變數 REF_CODE 會自動提供，用於生成推薦連結
+            
             程式碼品質要求：
             - 在完成任何功能實作後，必須執行 `pnpm lint` 檢查程式碼風格
             - 必須執行 `pnpm build` 確保專案能正常構建

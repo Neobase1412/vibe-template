@@ -9,7 +9,9 @@
       "Bash(mv:*)",
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:github.com)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "WebFetch(domain:nextjs.org)",
+      "Bash(pnpm build:*)"
     ],
     "deny": []
   }

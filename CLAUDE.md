@@ -7,6 +7,8 @@
 ## 核心工作流程
 
 1. **閱讀需求** - 仔細閱讀 `PRD.md` 文件，理解設計意圖和功能需求
+   - 特別注意「商品選擇」章節中列出的商品 ID
+   - 解析出要展示的商品 ID 列表（如 PROD_001、PROD_002）
 2. **遵循規範** - 嚴格遵守 `/docs` 目錄下的所有技術規範和指南
 3. **實現功能** - 使用專案既有的技術棧和元件庫實現所需功能
 4. **創建測試** - 為關鍵功能編寫適當的測試用例
@@ -344,20 +346,49 @@ const products = await response.json()
 ### 使用範例
 
 ```tsx
-// 在頁面元件中使用
-export default async function ProductsPage() {
-  // 從 PRD.md 讀取商品 ID 列表
-  // PRD.md 中會列出如：
-  // - PROD_001
-  // - PROD_002
-  // - PROD_003
-  const productIds = ['PROD_001', 'PROD_002', 'PROD_003'] // 根據 PRD.md 內容設定
-  const response = await fetch(`/api/products?ids=${productIds.join(',')}`)
-  const products = await response.json()
+// 方式一：使用 API route（適用於 Client Component）
+'use client'
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState([])
+  
+  useEffect(() => {
+    // 從 PRD.md 讀取的商品 ID
+    const productIds = ['PROD_001', 'PROD_002', 'PROD_003']
+    
+    fetch(`/api/products?ids=${productIds.join(',')}`)
+      .then(res => res.json())
+      .then(setProducts)
+  }, [])
 
   return (
     <div className="grid grid-cols-3 gap-6">
       {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  )
+}
+
+// 方式二：直接使用 Supabase（推薦，用於 Server Component）
+import { supabase } from '@/lib/supabase'
+
+export default async function ProductsPage() {
+  // 從 PRD.md 讀取商品 ID 列表
+  const productIds = ['PROD_001', 'PROD_002', 'PROD_003']
+  
+  if (!supabase) {
+    return <div>無法連接資料庫</div>
+  }
+  
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, merchant:merchants(*)')
+    .in('id', productIds)
+
+  return (
+    <div className="grid grid-cols-3 gap-6">
+      {(products || []).map(product => (
         <ProductCard key={product.id} product={product} />
       ))}
     </div>
@@ -368,10 +399,19 @@ export default async function ProductsPage() {
 ### 重要說明
 
 當 PRD.md 中指定了商品 ID 列表時，你需要：
-1. 解析 PRD.md 中的商品 ID（如 PROD_001、PROD_002）
+1. 從 PRD.md 的「商品選擇」章節解析商品 ID 列表
+   - 商品 ID 格式為 PROD_001 到 PROD_009
+   - 通常會列在「我要展示的商品 ID」標題下方
 2. 使用這些 ID 透過 API 獲取商品資料
-3. 系統會自動從 Supabase 獲取完整的商品資訊，包括名稱、價格、圖片等
+   ```typescript
+   // 範例：從 PRD 中讀取到 PROD_001, PROD_002, PROD_003
+   const productIds = ['PROD_001', 'PROD_002', 'PROD_003'];
+   const response = await fetch(`/api/products?ids=${productIds.join(',')}`);
+   ```
+3. 系統會自動從 Supabase 獲取完整的商品資訊，包括名稱、價格、圖片、商家資訊等
 4. 使用 `generateRefLink` 函數為每個商品生成正確的推薦連結
+   - 確保使用環境變數 `process.env.REF_CODE`
+   - 每個購買按鈕都必須包含推薦連結
 
 ## REF Link 整合說明
 
