@@ -320,7 +320,8 @@ export default function Page() {
      name: string           // 商品名稱
      price_in_cents: number // 價格（以分為單位）
      image_url: string | null // 商品圖片 URL
-     merchant: {            // 商家資訊
+     product_url?: string | null // 完整產品 URL（優先使用）
+     merchant?: {           // 商家資訊（當沒有 product_url 時使用）
        id: string
        name: string
        base_product_url: string // 商家銷售頁面基礎 URL
