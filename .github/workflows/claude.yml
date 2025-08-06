@@ -50,7 +50,8 @@ jobs:
             
             商品資料整合：
             - 商品資料來自 Supabase 資料庫，不是本地 JSON 檔案
-            - 從 PRD.md 的「商品選擇」章節讀取要展示的商品 ID（如 PROD_001、PROD_002）
+            - 從 selected-products.json 檔案讀取要展示的商品 ID
+            - 檔案中的 productIds 陣列包含所有要展示的商品 ID（如 PROD_001、PROD_002）
             - 優先使用 Server Component 直接從 Supabase 獲取資料
             - 如需使用 API，使用相對路徑 /api/products?ids=PROD_001,PROD_002
             - 不要使用 localhost 或複雜的 baseUrl 邏輯
@@ -64,3 +65,5 @@ jobs:
             - 優先修復錯誤(errors)，警告(warnings)可以暫時保留
             
             你的目標是將 PRD.md 中的創意描述轉化為實際可運行的網頁。
+            
+            重要：商品選擇在 selected-products.json 中，不是在 PRD.md 中。

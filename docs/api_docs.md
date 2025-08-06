@@ -12,6 +12,7 @@
 
 **請求參數**: 
 - `ids` (可選): 逗號分隔的商品 ID 列表，例如 `?ids=PROD_001,PROD_002,PROD_003`
+- 如果沒有提供 `ids` 參數，API 會自動從 `selected-products.json` 讀取商品 ID
 
 **成功響應**:
 - **狀態碼**: 200 OK
@@ -78,7 +79,7 @@ async function fetchAllProducts() {
 }
 ```
 
-#### 獲取特定商品（根據 PRD.md 中的 ID）
+#### 獲取特定商品（覆蓋預設值）
 ```typescript
 async function fetchSelectedProducts(productIds: string[]) {
   try {
@@ -151,6 +152,20 @@ export function useProducts() {
 3. **價格單位**: 所有價格都以分為單位（cents），顯示時需要轉換為元
 4. **推薦連結**: 使用 `generateRefLink` 函數生成包含 ref 參數的購買連結
 5. **環境變數**: 需要設定 `NEXT_PUBLIC_SUPABASE_URL` 和 `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+## 商品選擇說明
+
+商品選擇現在由 `selected-products.json` 檔案管理。檔案格式：
+
+```json
+{
+  "productIds": [
+    "PROD_001",
+    "PROD_002",
+    "PROD_003"
+  ]
+}
+```
 
 ## 商品 ID 清單
 

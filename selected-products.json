@@ -1,0 +1,19 @@
+{
+  "description": "請在下方的 productIds 陣列中填入您想要展示的商品 ID",
+  "availableProducts": [
+    "PROD_001 - 極簡風格水瓶",
+    "PROD_002 - 有機棉環保袋", 
+    "PROD_003 - 竹製餐具組",
+    "PROD_004 - 智慧溫控保溫杯",
+    "PROD_005 - 無線充電滑鼠墊",
+    "PROD_006 - 藍牙追蹤器套組",
+    "PROD_007 - 天然精油擴香組",
+    "PROD_008 - 膠原蛋白面膜組",
+    "PROD_009 - 瑜珈按摩滾輪"
+  ],
+  "productIds": [
+    "PROD_001",
+    "PROD_002",
+    "PROD_003"
+  ]
+}
