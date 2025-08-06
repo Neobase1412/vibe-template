@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 /**
  * 商品 API 端點
@@ -20,7 +22,22 @@ export async function GET(request: Request) {
     
     // 獲取查詢參數
     const { searchParams } = new URL(request.url)
-    const idsParam = searchParams.get('ids')
+    let idsParam = searchParams.get('ids')
+    
+    // 如果沒有指定 ids，嘗試從 selected-products.json 讀取
+    if (!idsParam) {
+      try {
+        const filePath = path.join(process.cwd(), 'selected-products.json')
+        const fileContent = readFileSync(filePath, 'utf-8')
+        const selection = JSON.parse(fileContent)
+        if (selection.productIds && selection.productIds.length > 0) {
+          idsParam = selection.productIds.join(',')
+        }
+      } catch (error) {
+        // 如果讀取失敗，繼續使用原本的邏輯
+        console.warn('Could not read selected-products.json:', error)
+      }
+    }
     
     // 構建查詢
     let query = supabase

@@ -7,8 +7,7 @@
 ## 核心工作流程
 
 1. **閱讀需求** - 仔細閱讀 `PRD.md` 文件，理解設計意圖和功能需求
-   - 特別注意「商品選擇」章節中列出的商品 ID
-   - 解析出要展示的商品 ID 列表（如 PROD_001、PROD_002）
+2. **讀取商品選擇** - 從 `selected-products.json` 檔案讀取要展示的商品 ID 列表
 2. **遵循規範** - 嚴格遵守 `/docs` 目錄下的所有技術規範和指南
 3. **實現功能** - 使用專案既有的技術棧和元件庫實現所需功能
 4. **創建測試** - 為關鍵功能編寫適當的測試用例
@@ -310,6 +309,19 @@ export default function Page() {
 
 ## 商品資料整合說明
 
+### 商品選擇檔案
+商品選擇已從 PRD.md 移至獨立檔案 `selected-products.json`，格式如下：
+
+```json
+{
+  "productIds": [
+    "PROD_001",
+    "PROD_002",
+    "PROD_003"
+  ]
+}
+```
+
 ### 資料來源
 專案已整合 Supabase Data Center，所有商品資料都從真實的資料庫獲取：
 
@@ -353,8 +365,8 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([])
   
   useEffect(() => {
-    // 從 PRD.md 讀取的商品 ID
-    const productIds = ['PROD_001', 'PROD_002', 'PROD_003']
+    // 從 selected-products.json 讀取的商品 ID
+    const productIds = ['PROD_001', 'PROD_002', 'PROD_003'] // 實際應從檔案讀取
     
     fetch(`/api/products?ids=${productIds.join(',')}`)
       .then(res => res.json())
@@ -374,8 +386,9 @@ export default function ProductsPage() {
 import { supabase } from '@/lib/supabase'
 
 export default async function ProductsPage() {
-  // 從 PRD.md 讀取商品 ID 列表
-  const productIds = ['PROD_001', 'PROD_002', 'PROD_003']
+  // 從 selected-products.json 讀取商品 ID 列表
+  const selectedProducts = await import('@/selected-products.json')
+  const productIds = selectedProducts.productIds
   
   if (!supabase) {
     return <div>無法連接資料庫</div>
@@ -398,10 +411,10 @@ export default async function ProductsPage() {
 
 ### 重要說明
 
-當 PRD.md 中指定了商品 ID 列表時，你需要：
-1. 從 PRD.md 的「商品選擇」章節解析商品 ID 列表
+當需要展示商品時，你需要：
+1. 從 `selected-products.json` 檔案讀取商品 ID 列表
+   - 檔案中的 `productIds` 陣列包含所有要展示的商品
    - 商品 ID 格式為 PROD_001 到 PROD_009
-   - 通常會列在「我要展示的商品 ID」標題下方
 2. 使用這些 ID 透過 API 獲取商品資料
    ```typescript
    // 範例：從 PRD 中讀取到 PROD_001, PROD_002, PROD_003
